@@ -55,6 +55,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Set;
 
 /**
@@ -416,6 +417,9 @@ public class ResolverActivity extends AlertActivity implements AdapterView.OnIte
         startActivity(in);
     }
 
+    /** overridden in ChooserActivity */
+    protected List<String> getPopularPackages(String mimeType) { return null; }
+
     private final class DisplayResolveInfo {
         ResolveInfo ri;
         CharSequence displayLabel;
@@ -534,11 +538,17 @@ public class ResolverActivity extends AlertActivity implements AdapterView.OnIte
                         }
                     }
                 }
+                
+                //sort by name
                 if (N > 1) {
                     ResolveInfo.DisplayNameComparator rComparator =
                             new ResolveInfo.DisplayNameComparator(mPm);
                     Collections.sort(currentResolveList, rComparator);
                 }
+                
+                // move activities in popular packages to the front of the list
+                orderByPopularity(mIntent.getType(), currentResolveList);
+                
                 // First put the initial items at the top.
                 if (mInitialIntents != null) {
                     for (int i=0; i<mInitialIntents.length; i++) {
@@ -593,6 +603,42 @@ public class ResolverActivity extends AlertActivity implements AdapterView.OnIte
                 // Process last group
                 processGroup(currentResolveList, start, (N-1), r0, r0Label);
             }
+        }
+
+        private List<ResolveInfo> orderByPopularity(String mimeType, List<ResolveInfo> current) {
+            if(mimeType == null || mimeType.isEmpty()) { return current; }
+
+            List<String> popularPackages = getPopularPackages(mimeType);
+            if(popularPackages == null || popularPackages.isEmpty()) { return current; }
+
+            // only use the top four
+            if(popularPackages.size() > 4) {
+                popularPackages = popularPackages.subList(0, 4);
+            }
+            Log.i("HACKATHON", "popular packages for " + mimeType + " are " + popularPackages);
+
+            List<ResolveInfo> popular = new ArrayList<ResolveInfo>(current.size());
+
+            // examine the resolve list for popular packages, in order of their popularity
+            for(String pkg : popularPackages) {
+                // move any item in the currentResolveList that matches to the popular list
+                ListIterator<ResolveInfo> iter = current.listIterator();
+                while(iter.hasNext()) {
+                    ResolveInfo ri = iter.next();
+                    if(pkg.equals(ri.activityInfo.packageName)) {
+                        iter.remove();
+                        popular.add(ri);
+                    }
+                }
+            }
+
+            // nothing was popular
+            if(popular.isEmpty()) { return current; }
+
+            // items have been moved to the popular list, so append
+            // remainder to the end, and that becomes the new list
+            popular.addAll(current);
+            return popular;
         }
 
         private void processGroup(List<ResolveInfo> rList, int start, int end, ResolveInfo ro,

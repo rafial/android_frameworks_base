@@ -20,6 +20,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.Log;
+import android.content.pm.ResolveInfo;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
 
 public class ChooserActivity extends ResolverActivity {
     @Override
@@ -51,5 +55,27 @@ public class ChooserActivity extends ResolverActivity {
             }
         }
         super.onCreate(savedInstanceState, target, title, initialIntents, null, false);
+    }
+
+    protected void onIntentSelected(ResolveInfo ri, Intent intent, boolean alwaysCheck) {
+        String mimeType = getIntent().getType();
+        String chosenPackage = intent.getPackage();
+        if(mimeType != null && chosenPackage != null) {
+            Log.i("HACKATHON", "updating stats for " + mimeType + " choosing " + chosenPackage);
+            //updateState(mimeType, chosePackage);
+        }
+    }
+
+    protected List<String> getPopularPackages(String mimeType) {
+        // dummy data for testing
+        if(mimeType != null && mimeType.startsWith("image")) {
+            List<String> l = new ArrayList<String>(3);
+            l.add("com.twitter.android");
+            l.add("com.google.android.apps.plus");
+            l.add("com.facebook.katana");
+            return l;
+        } else {
+            return Collections.emptyList();
+        }
     }
 }
