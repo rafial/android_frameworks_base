@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.android.internal.app.CyngnPanelView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+    <FrameLayout
+            android:id="@+id/contentView"
+            android:layout_width="match_parent"
+            android:layout_height="142dp">
+
+        <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:background="#3D3D3D">
+            <TextView
+                    android:id="@+id/chooserTitle"
+                    android:layout_marginLeft="24dp"
+                    android:layout_marginTop="24dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="16dp"
+                    android:text="@string/chooser_title"
+                    android:textColor="@android:color/white"/>
+        </FrameLayout>
+
+        <GridView
+                android:id="@+id/gridview"
+                android:layout_marginTop="54dp"
+                android:layout_width="match_parent"
+                android:layout_height="176dp"
+                android:numColumns="5"
+                android:stretchMode="columnWidth"
+                android:gravity="center"
+                android:background="#3D3D3D"/>
+
+    </FrameLayout>
+
+    <FrameLayout
+            android:id="@+id/dragBar"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:background="#303030">
+        <ImageView
+                android:layout_gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_hex_handle"/>
+    </FrameLayout>
+
+</com.android.internal.app.CyngnPanelView>

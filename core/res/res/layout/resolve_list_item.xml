@@ -18,32 +18,29 @@
 */
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="horizontal"
-              android:layout_height="wrap_content"
+              android:orientation="vertical"
+              android:layout_height="72dp"
               android:layout_width="match_parent"
-              android:background="?attr/activatedBackgroundIndicator">
+              android:gravity="center">
 
     <!-- Activity icon when presenting dialog
          Size will be filled in by ResolverActivity -->
     <ImageView android:id="@+id/icon"
-               android:layout_width="0dp"
-               android:layout_height="0dp"
-               android:layout_marginStart="12dp"
-               android:padding="4dp"
+               android:layout_width="36dp"
+               android:layout_height="36dp"
                android:scaleType="fitCenter" />
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:gravity="start|center_vertical"
-              android:orientation="vertical"
-              android:layout_height="wrap_content"
-              android:layout_width="wrap_content"
-              android:layout_gravity="start|center_vertical"
-              android:layout_marginStart="12dp">
+                  android:orientation="vertical"
+                  android:layout_height="wrap_content"
+                  android:layout_width="wrap_content">
         <!-- Activity name -->
         <TextView android:id="@android:id/text1"
-                  android:textAppearance="?android:attr/textAppearanceMedium"
-                  android:layout_width="wrap_content"
+                  android:layout_width="60dp"
                   android:layout_height="wrap_content"
+                  android:textColor="@android:color/white"
+                  android:textSize="10dp"
+                  android:gravity="center"
                   android:maxLines="2" />
         <!-- Extended activity info to distinguish between duplicate activity names -->
         <TextView android:id="@android:id/text2"
@@ -51,6 +48,7 @@
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
                   android:maxLines="2"
+                  android:visibility="gone"
                   android:paddingTop="4dip" />
     </LinearLayout>
 </LinearLayout>

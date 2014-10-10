@@ -16,7 +16,9 @@
 
 package com.android.internal.app;
 
+import android.app.Activity;
 import android.os.AsyncTask;
+import android.widget.GridView;
 import com.android.internal.R;
 import com.android.internal.content.PackageMonitor;
 
@@ -63,21 +65,17 @@ import java.util.Set;
  * which there is more than one matching activity, allowing the user to decide
  * which to go to.  It is not normally used directly by application developers.
  */
-public class ResolverActivity extends AlertActivity implements AdapterView.OnItemClickListener {
+public class ResolverActivity extends Activity implements AdapterView.OnItemClickListener {
     private static final String TAG = "ResolverActivity";
     private static final boolean DEBUG = false;
 
     private int mLaunchedFromUid;
     private ResolveListAdapter mAdapter;
     private PackageManager mPm;
-    private boolean mAlwaysUseOption;
     private boolean mShowExtended;
-    private ListView mListView;
-    private Button mAlwaysButton;
-    private Button mOnceButton;
+    private GridView mGridView;
     private int mIconDpi;
     private int mIconSize;
-    private int mMaxColumns;
     private int mLastSelected = ListView.INVALID_POSITION;
 
     private boolean mRegistered;
@@ -121,8 +119,11 @@ public class ResolverActivity extends AlertActivity implements AdapterView.OnIte
     protected void onCreate(Bundle savedInstanceState, Intent intent,
             CharSequence title, Intent[] initialIntents, List<ResolveInfo> rList,
             boolean alwaysUseOption) {
-        setTheme(R.style.Theme_DeviceDefault_Light_Dialog_Alert);
+        //setTheme(R.style.Theme_DeviceDefault_Light_Dialog_Alert);
         super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.smart_chooser_activity);
+
         try {
             mLaunchedFromUid = ActivityManagerNative.getDefault().getLaunchedFromUid(
                     getActivityToken());
@@ -130,12 +131,6 @@ public class ResolverActivity extends AlertActivity implements AdapterView.OnIte
             mLaunchedFromUid = -1;
         }
         mPm = getPackageManager();
-        mAlwaysUseOption = alwaysUseOption;
-        mMaxColumns = getResources().getInteger(R.integer.config_maxResolverActivityColumns);
-
-        AlertController.AlertParams ap = mAlertParams;
-
-        ap.mTitle = title;
 
         mPackageMonitor.register(this, getMainLooper(), false);
         mRegistered = true;
@@ -152,42 +147,15 @@ public class ResolverActivity extends AlertActivity implements AdapterView.OnIte
             finish();
             return;
         } else if (count > 1) {
-            ap.mView = getLayoutInflater().inflate(R.layout.resolver_list, null);
-            mListView = (ListView) ap.mView.findViewById(R.id.resolver_list);
-            mListView.setAdapter(mAdapter);
-            mListView.setOnItemClickListener(this);
-            mListView.setOnItemLongClickListener(new ItemLongClickListener());
-
-            if (alwaysUseOption) {
-                mListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-            }
+            mGridView = (GridView)findViewById(R.id.gridview);
+            mGridView.setAdapter(mAdapter);
+            mGridView.setOnItemClickListener(this);
         } else if (count == 1) {
             startActivity(mAdapter.intentForPosition(0));
             mPackageMonitor.unregister();
             mRegistered = false;
             finish();
             return;
-        } else {
-            ap.mMessage = getResources().getText(R.string.noApplications);
-        }
-
-        setupAlert();
-
-        if (alwaysUseOption) {
-            final ViewGroup buttonLayout = (ViewGroup) findViewById(R.id.button_bar);
-            if (buttonLayout != null) {
-                buttonLayout.setVisibility(View.VISIBLE);
-                mAlwaysButton = (Button) buttonLayout.findViewById(R.id.button_always);
-                mOnceButton = (Button) buttonLayout.findViewById(R.id.button_once);
-            } else {
-                mAlwaysUseOption = false;
-            }
-            // Set the initial highlight if there was a preferred or last used choice
-            final int initialHighlight = mAdapter.getInitialHighlight();
-            if (initialHighlight >= 0) {
-                mListView.setItemChecked(initialHighlight, true);
-                onItemClick(null, null, initialHighlight, 0); // Other entries are not used
-            }
         }
     }
 
@@ -256,40 +224,8 @@ public class ResolverActivity extends AlertActivity implements AdapterView.OnIte
     }
 
     @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        if (mAlwaysUseOption) {
-            final int checkedPos = mListView.getCheckedItemPosition();
-            final boolean enabled = checkedPos != ListView.INVALID_POSITION;
-            mLastSelected = checkedPos;
-            mAlwaysButton.setEnabled(enabled);
-            mOnceButton.setEnabled(enabled);
-            if (enabled) {
-                mListView.setSelection(checkedPos);
-            }
-        }
-    }
-
-    @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        final int checkedPos = mListView.getCheckedItemPosition();
-        final boolean hasValidSelection = checkedPos != ListView.INVALID_POSITION;
-        if (mAlwaysUseOption && (!hasValidSelection || mLastSelected != checkedPos)) {
-            mAlwaysButton.setEnabled(hasValidSelection);
-            mOnceButton.setEnabled(hasValidSelection);
-            if (hasValidSelection) {
-                mListView.smoothScrollToPosition(checkedPos);
-            }
-            mLastSelected = checkedPos;
-        } else {
-            startSelected(position, false);
-        }
-    }
-
-    public void onButtonClick(View v) {
-        final int id = v.getId();
-        startSelected(mListView.getCheckedItemPosition(), id == R.id.button_always);
-        dismiss();
+        startSelected(position, false);
     }
 
     void startSelected(int which, boolean always) {
@@ -303,6 +239,7 @@ public class ResolverActivity extends AlertActivity implements AdapterView.OnIte
     }
 
     protected void onIntentSelected(ResolveInfo ri, Intent intent, boolean alwaysCheck) {
+        /*
         if (mAlwaysUseOption && mAdapter.mOrigResolveList != null) {
             // Build a reasonable intent filter, based on what matched.
             IntentFilter filter = new IntentFilter();
@@ -404,6 +341,7 @@ public class ResolverActivity extends AlertActivity implements AdapterView.OnIte
                 }
             }
         }
+        */
 
         if (intent != null) {
             startActivity(intent);
@@ -491,8 +429,7 @@ public class ResolverActivity extends AlertActivity implements AdapterView.OnIte
                 currentResolveList = mOrigResolveList = mBaseResolveList;
             } else {
                 currentResolveList = mOrigResolveList = mPm.queryIntentActivities(
-                        mIntent, PackageManager.MATCH_DEFAULT_ONLY
-                        | (mAlwaysUseOption ? PackageManager.GET_RESOLVED_FILTER : 0));
+                        mIntent, PackageManager.MATCH_DEFAULT_ONLY);
                 // Filter out any activities that the launched uid does not
                 // have permission for.  We don't do this when we have an explicit
                 // list of resolved activities, because that only happens when

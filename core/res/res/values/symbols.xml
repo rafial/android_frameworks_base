@@ -1671,6 +1671,10 @@
   <java-symbol type="integer" name="config_maxResolverActivityColumns" />
   <java-symbol type="array" name="config_notificationScorers" />
 
+  <!-- Smart chooser activity -->
+  <java-symbol type="layout" name="smart_chooser_activity" />
+  <java-symbol type="id" name="gridview" />
+
   <!-- From SystemUI -->
   <java-symbol type="anim" name="push_down_in" />
   <java-symbol type="anim" name="push_down_out" />
@@ -2082,4 +2086,9 @@
 
   <!-- for wifi auto connection -->
   <java-symbol type="bool" name="wifi_autocon" />
+
+  <!-- smart chooser -->
+  <java-symbol type="string" name="chooser_title" />
+  <java-symbol type="drawable" name="ic_hex_handle"/>
+  <java-symbol type="drawable" name="ic_more_apps"/>
 </resources>

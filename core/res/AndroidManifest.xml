@@ -2633,7 +2633,7 @@
                  android:icon="@drawable/ic_launcher_android"
                  android:supportsRtl="true">
         <activity android:name="com.android.internal.app.ChooserActivity"
-                android:theme="@style/Theme.Holo.Dialog.Alert"
+                android:theme="@android:style/Theme.Translucent.NoTitleBar"
                 android:finishOnCloseSystemDialogs="true"
                 android:excludeFromRecents="true"
                 android:multiprocess="true">
