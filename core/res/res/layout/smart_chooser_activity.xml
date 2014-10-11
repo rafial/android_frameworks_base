@@ -34,7 +34,7 @@
                     android:id="@+id/gridview"
                     android:layout_marginTop="54dp"
                     android:layout_width="match_parent"
-                    android:layout_height="176dp"
+                    android:layout_height="230dp"
                     android:numColumns="5"
                     android:stretchMode="columnWidth"
                     android:gravity="center"

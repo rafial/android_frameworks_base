@@ -17,8 +17,10 @@
 package com.android.internal.app;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.content.pm.ResolveInfo;
 import java.util.List;
@@ -29,6 +31,10 @@ import android.view.Window;
 import android.view.WindowManager;
 
 public class ChooserActivity extends ResolverActivity {
+
+    private static final String GPLUS_PROP = "persist.smart_chooser_gplus";
+    private static final String GPLUS_PKG = "com.google.android.apps.plus";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -66,10 +72,17 @@ public class ChooserActivity extends ResolverActivity {
 
     protected void onIntentSelected(ResolveInfo ri, Intent intent, boolean alwaysCheck) {
         String mimeType = getIntent().getType();
-        String chosenPackage = intent.getPackage();
-        if(mimeType != null && chosenPackage != null) {
-            Log.i("HACKATHON", "updating stats for " + mimeType + " choosing " + chosenPackage);
+        String chosenPackage = intent.getComponent().getPackageName();
+        Log.i("HACKATHON", "updating stats for " + mimeType + " choosing " + chosenPackage);
+        if(chosenPackage != null) {
             //updateState(mimeType, chosePackage);
+            if (chosenPackage.equals(GPLUS_PKG)) {
+                String key = GPLUS_PROP;
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+                int curValue = prefs.getInt(key, 0);
+                Log.i("HACKATHON", "putting gplus value " + (curValue+1));
+                prefs.edit().putInt(key, curValue+1).commit();
+            }
         }
         
         // NOTE: make sure this call to super is here, or the ChooserActivity will stop working! 
@@ -77,12 +90,12 @@ public class ChooserActivity extends ResolverActivity {
     }
 
     protected List<String> getPopularPackages(String mimeType) {
-        // dummy data for testing
-        if(mimeType != null && mimeType.startsWith("image")) {
-            List<String> l = new ArrayList<String>(3);
-            l.add("com.twitter.android");
-            l.add("com.google.android.apps.plus");
-            l.add("com.facebook.katana");
+        String key = GPLUS_PROP;
+        int gplusVal = PreferenceManager.getDefaultSharedPreferences(this).getInt(GPLUS_PROP, 0);
+        Log.i("HACKATHON", "got gplus value " + gplusVal);
+        if (gplusVal > 0) {
+            List<String> l = new ArrayList<String>();
+            l.add(GPLUS_PKG);
             return l;
         } else {
             return Collections.emptyList();

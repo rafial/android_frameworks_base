@@ -559,7 +559,7 @@ public class ResolverActivity extends Activity implements AdapterView.OnItemClic
         }
 
         public Intent intentForPosition(int position) {
-            DisplayResolveInfo dri = mList.get(position);
+            DisplayResolveInfo dri = mList.get(position - 1);
             
             Intent intent = new Intent(dri.origIntent != null
                     ? dri.origIntent : mIntent);
