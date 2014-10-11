@@ -547,7 +547,7 @@ public class ResolverActivity extends AlertActivity implements AdapterView.OnIte
                 }
                 
                 // move activities in popular packages to the front of the list
-                orderByPopularity(mIntent.getType(), currentResolveList);
+                currentResolveList = orderByPopularity(mIntent.getType(), currentResolveList);
                 
                 // First put the initial items at the top.
                 if (mInitialIntents != null) {
