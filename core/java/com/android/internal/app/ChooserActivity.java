@@ -64,6 +64,9 @@ public class ChooserActivity extends ResolverActivity {
             Log.i("HACKATHON", "updating stats for " + mimeType + " choosing " + chosenPackage);
             //updateState(mimeType, chosePackage);
         }
+        
+        // NOTE: make sure this call to super is here, or the ChooserActivity will stop working! 
+        super.onIntentSelected(ri, intent, alwaysCheck);
     }
 
     protected List<String> getPopularPackages(String mimeType) {
