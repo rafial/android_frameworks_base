@@ -77,6 +77,7 @@ public class ResolverActivity extends Activity implements AdapterView.OnItemClic
     private int mIconDpi;
     private int mIconSize;
     private int mLastSelected = ListView.INVALID_POSITION;
+    private CyngnPanelView mPanelView;
 
     private boolean mRegistered;
     private final PackageMonitor mPackageMonitor = new PackageMonitor() {
@@ -124,6 +125,14 @@ public class ResolverActivity extends Activity implements AdapterView.OnItemClic
 
         setContentView(R.layout.smart_chooser_activity);
 
+        View smartChooser = findViewById(R.id.smartChooser);
+        smartChooser.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+
         try {
             mLaunchedFromUid = ActivityManagerNative.getDefault().getLaunchedFromUid(
                     getActivityToken());
@@ -141,6 +150,7 @@ public class ResolverActivity extends Activity implements AdapterView.OnItemClic
 
         mAdapter = new ResolveListAdapter(this, intent, initialIntents, rList,
                 mLaunchedFromUid);
+        mPanelView = (CyngnPanelView)findViewById(R.id.panelView);
         int count = mAdapter.getCount();
         if (mLaunchedFromUid < 0 || UserHandle.isIsolated(mLaunchedFromUid)) {
             // Gulp!
@@ -225,7 +235,15 @@ public class ResolverActivity extends Activity implements AdapterView.OnItemClic
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        startSelected(position, false);
+        if (position > 0) {
+            startSelected(position, false);
+        } else {
+            if (mPanelView.isExpanded()) {
+                mPanelView.collapse();
+            } else {
+                mPanelView.expand();
+            }
+        }
     }
 
     void startSelected(int which, boolean always) {
@@ -239,110 +257,6 @@ public class ResolverActivity extends Activity implements AdapterView.OnItemClic
     }
 
     protected void onIntentSelected(ResolveInfo ri, Intent intent, boolean alwaysCheck) {
-        /*
-        if (mAlwaysUseOption && mAdapter.mOrigResolveList != null) {
-            // Build a reasonable intent filter, based on what matched.
-            IntentFilter filter = new IntentFilter();
-
-            if (intent.getAction() != null) {
-                filter.addAction(intent.getAction());
-            }
-            Set<String> categories = intent.getCategories();
-            if (categories != null) {
-                for (String cat : categories) {
-                    filter.addCategory(cat);
-                }
-            }
-            filter.addCategory(Intent.CATEGORY_DEFAULT);
-
-            int cat = ri.match&IntentFilter.MATCH_CATEGORY_MASK;
-            Uri data = intent.getData();
-            if (cat == IntentFilter.MATCH_CATEGORY_TYPE) {
-                String mimeType = intent.resolveType(this);
-                if (mimeType != null) {
-                    try {
-                        filter.addDataType(mimeType);
-                    } catch (IntentFilter.MalformedMimeTypeException e) {
-                        Log.w("ResolverActivity", e);
-                        filter = null;
-                    }
-                }
-            }
-            if (data != null && data.getScheme() != null) {
-                // We need the data specification if there was no type,
-                // OR if the scheme is not one of our magical "file:"
-                // or "content:" schemes (see IntentFilter for the reason).
-                if (cat != IntentFilter.MATCH_CATEGORY_TYPE
-                        || (!"file".equals(data.getScheme())
-                                && !"content".equals(data.getScheme()))) {
-                    filter.addDataScheme(data.getScheme());
-
-                    // Look through the resolved filter to determine which part
-                    // of it matched the original Intent.
-                    Iterator<PatternMatcher> pIt = ri.filter.schemeSpecificPartsIterator();
-                    if (pIt != null) {
-                        String ssp = data.getSchemeSpecificPart();
-                        while (ssp != null && pIt.hasNext()) {
-                            PatternMatcher p = pIt.next();
-                            if (p.match(ssp)) {
-                                filter.addDataSchemeSpecificPart(p.getPath(), p.getType());
-                                break;
-                            }
-                        }
-                    }
-                    Iterator<IntentFilter.AuthorityEntry> aIt = ri.filter.authoritiesIterator();
-                    if (aIt != null) {
-                        while (aIt.hasNext()) {
-                            IntentFilter.AuthorityEntry a = aIt.next();
-                            if (a.match(data) >= 0) {
-                                int port = a.getPort();
-                                filter.addDataAuthority(a.getHost(),
-                                        port >= 0 ? Integer.toString(port) : null);
-                                break;
-                            }
-                        }
-                    }
-                    pIt = ri.filter.pathsIterator();
-                    if (pIt != null) {
-                        String path = data.getPath();
-                        while (path != null && pIt.hasNext()) {
-                            PatternMatcher p = pIt.next();
-                            if (p.match(path)) {
-                                filter.addDataPath(p.getPath(), p.getType());
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (filter != null) {
-                final int N = mAdapter.mOrigResolveList.size();
-                ComponentName[] set = new ComponentName[N];
-                int bestMatch = 0;
-                for (int i=0; i<N; i++) {
-                    ResolveInfo r = mAdapter.mOrigResolveList.get(i);
-                    set[i] = new ComponentName(r.activityInfo.packageName,
-                            r.activityInfo.name);
-                    if (r.match > bestMatch) bestMatch = r.match;
-                }
-                if (alwaysCheck) {
-                    getPackageManager().addPreferredActivity(filter, bestMatch, set,
-                            intent.getComponent());
-                } else {
-                    try {
-                        AppGlobals.getPackageManager().setLastChosenActivity(intent,
-                                intent.resolveTypeIfNeeded(getContentResolver()),
-                                PackageManager.MATCH_DEFAULT_ONLY,
-                                filter, bestMatch, intent.getComponent());
-                    } catch (RemoteException re) {
-                        Log.d(TAG, "Error calling setLastChosenActivity\n" + re);
-                    }
-                }
-            }
-        }
-        */
-
         if (intent != null) {
             startActivity(intent);
         }
@@ -386,6 +300,9 @@ public class ResolverActivity extends Activity implements AdapterView.OnItemClic
         List<ResolveInfo> mOrigResolveList;
 
         private int mInitialHighlight = -1;
+
+        class MoreObject {}
+        private MoreObject mMoreObject = new MoreObject();
 
         public ResolveListAdapter(Context context, Intent intent,
                 Intent[] initialIntents, List<ResolveInfo> rList, int launchedFromUid) {
@@ -638,7 +555,7 @@ public class ResolverActivity extends Activity implements AdapterView.OnItemClic
         }
 
         public ResolveInfo resolveInfoForPosition(int position) {
-            return mList.get(position).ri;
+            return mList.get(position - 1).ri;
         }
 
         public Intent intentForPosition(int position) {
@@ -655,11 +572,15 @@ public class ResolverActivity extends Activity implements AdapterView.OnItemClic
         }
 
         public int getCount() {
-            return mList.size();
+            return mList.size() + 1; // +1 for more obj
         }
 
         public Object getItem(int position) {
-            return mList.get(position);
+            if (position == 0) {
+                return mMoreObject;
+            } else {
+                return mList.get(position);
+            }
         }
 
         public long getItemId(int position) {
@@ -681,7 +602,15 @@ public class ResolverActivity extends Activity implements AdapterView.OnItemClic
             } else {
                 view = convertView;
             }
-            bindView(view, mList.get(position));
+
+            if (position > 0) {
+                bindView(view, mList.get(position - 1));
+            } else {
+                final ViewHolder holder = (ViewHolder) view.getTag();
+                holder.text.setText("More Apps");
+                holder.icon.setImageResource(R.drawable.ic_more_apps);
+            }
+
             return view;
         }
 

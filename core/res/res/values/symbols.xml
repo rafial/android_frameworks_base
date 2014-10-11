@@ -1674,6 +1674,8 @@
   <!-- Smart chooser activity -->
   <java-symbol type="layout" name="smart_chooser_activity" />
   <java-symbol type="id" name="gridview" />
+  <java-symbol type="id" name="panelView" />
+  <java-symbol type="id" name="smartChooser" />
 
   <!-- From SystemUI -->
   <java-symbol type="anim" name="push_down_in" />

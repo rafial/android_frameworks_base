@@ -12,7 +12,7 @@ import android.widget.LinearLayout;
 
 public class CyngnPanelView extends LinearLayout implements View.OnClickListener {
 
-    private static final int EXPANDED_SIZE_DP = 230;
+    private static final int EXPANDED_SIZE_DP = (int)(54 + 92 * 2.5); // show 2.5 tiles
 
     private View mContentView;
     private View mDragBar;
@@ -95,7 +95,7 @@ public class CyngnPanelView extends LinearLayout implements View.OnClickListener
     }
 
     private void settle(float y) {
-        if (Math.abs(y - mContentView.getTop()) > Math.abs(mContentView.getBottom() - y)) {
+        if (Math.abs(y - mCollapsedHeight) < Math.abs(mExpandedHeight - y)) {
             collapse();
         } else {
             expand();
