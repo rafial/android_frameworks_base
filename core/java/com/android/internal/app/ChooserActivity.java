@@ -35,6 +35,7 @@ public class ChooserActivity extends ResolverActivity {
     private static final String GPLUS_PROP = "persist.smart_chooser_gplus";
     private static final String GPLUS_PKG = "com.google.android.apps.plus";
 
+    IntentLearner intentdb;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -68,6 +69,8 @@ public class ChooserActivity extends ResolverActivity {
             }
         }
         super.onCreate(savedInstanceState, target, title, initialIntents, null, false);
+        Log.i("HACKATHON", "Creating IntentLearner Object " );
+        intentdb = new IntentLearner(this.getApplicationContext());
     }
 
     protected void onIntentSelected(ResolveInfo ri, Intent intent, boolean alwaysCheck) {
@@ -83,6 +86,11 @@ public class ChooserActivity extends ResolverActivity {
                 Log.i("HACKATHON", "putting gplus value " + (curValue+1));
                 prefs.edit().putInt(key, curValue+1).commit();
             }
+            else
+            {
+                Log.i("HACKATHON", "Updating App usage for "+ mimeType + " and " + chosenPackage + " in IntentDB " );
+                intentdb.UpdateAppUsage (chosenPackage,mimeType,null);
+            }
         }
         
         // NOTE: make sure this call to super is here, or the ChooserActivity will stop working! 
@@ -90,15 +98,28 @@ public class ChooserActivity extends ResolverActivity {
     }
 
     protected List<String> getPopularPackages(String mimeType) {
+        List<String> l;
         String key = GPLUS_PROP;
         int gplusVal = PreferenceManager.getDefaultSharedPreferences(this).getInt(GPLUS_PROP, 0);
         Log.i("HACKATHON", "got gplus value " + gplusVal);
         if (gplusVal > 0) {
-            List<String> l = new ArrayList<String>();
+            l = new ArrayList<String>();
             l.add(GPLUS_PKG);
-            return l;
-        } else {
+        }
+        else
+        {
+            Log.i("HACKATHON", "Get List of Apps for "+ mimeType +" from IntentDB " );
+            l = intentdb.GetListofApps(mimeType);
+            Log.i("HACKATHON", "Top App from intentdb is " + l.get(0));
+        }
+
+        if (l.isEmpty())
+        {
             return Collections.emptyList();
+        }
+        else
+        {
+            return l;
         }
     }
 
