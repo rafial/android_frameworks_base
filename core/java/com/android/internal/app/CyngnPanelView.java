@@ -13,12 +13,14 @@ import android.widget.LinearLayout;
 public class CyngnPanelView extends LinearLayout implements View.OnClickListener {
 
     private static final int EXPANDED_SIZE_DP = (int)(54 + 92 * 2.5); // show 2.5 tiles
+    private static final int INITIAL_TRANSLATE_SIZE = 146;
 
     private View mContentView;
     private View mDragBar;
 
     private int mCollapsedHeight;
     private int mExpandedHeight;
+    private int mTranslateY;
     private Context mContext;
 
     public CyngnPanelView(Context context) {
@@ -43,6 +45,11 @@ public class CyngnPanelView extends LinearLayout implements View.OnClickListener
 
         mCollapsedHeight = mContentView.getLayoutParams().height;
         mExpandedHeight = dpToPx(EXPANDED_SIZE_DP);
+        mTranslateY = -dpToPx(INITIAL_TRANSLATE_SIZE);
+    }
+
+    public int getInitialTranslateY() {
+        return mTranslateY;
     }
 
     public int dpToPx(int dp) {

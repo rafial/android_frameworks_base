@@ -16,6 +16,7 @@
 
 package com.android.internal.app;
 
+import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.widget.GridView;
@@ -78,6 +79,9 @@ public class ResolverActivity extends Activity implements AdapterView.OnItemClic
     private int mIconSize;
     private int mLastSelected = ListView.INVALID_POSITION;
     private CyngnPanelView mPanelView;
+    protected Intent mSourceIntent;
+
+    private int mInitalTranslateY;
 
     private boolean mRegistered;
     private final PackageMonitor mPackageMonitor = new PackageMonitor() {
@@ -148,9 +152,13 @@ public class ResolverActivity extends Activity implements AdapterView.OnItemClic
         mIconDpi = am.getLauncherLargeIconDensity();
         mIconSize = am.getLauncherLargeIconSize();
 
+        mSourceIntent = intent;
         mAdapter = new ResolveListAdapter(this, intent, initialIntents, rList,
                 mLaunchedFromUid);
         mPanelView = (CyngnPanelView)findViewById(R.id.panelView);
+        mInitalTranslateY = mPanelView.getInitialTranslateY();
+        mPanelView.setTranslationY(mInitalTranslateY);
+
         int count = mAdapter.getCount();
         if (mLaunchedFromUid < 0 || UserHandle.isIsolated(mLaunchedFromUid)) {
             // Gulp!
@@ -200,6 +208,15 @@ public class ResolverActivity extends Activity implements AdapterView.OnItemClic
             Log.e(TAG, "Couldn't find resources for package", e);
         }
         return ri.loadIcon(mPm);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        ObjectAnimator anim =
+                ObjectAnimator.ofFloat(mPanelView, "translationY", mPanelView.getTranslationY(), 0);
+        anim.setDuration(200);
+        anim.start();
     }
 
     @Override

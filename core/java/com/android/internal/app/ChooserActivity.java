@@ -32,15 +32,15 @@ import android.view.WindowManager;
 
 public class ChooserActivity extends ResolverActivity {
 
-    private static final String GPLUS_PROP = "persist.smart_chooser_gplus";
-    private static final String GPLUS_PKG = "com.google.android.apps.plus";
-
     IntentLearner intentdb;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+        Log.i("HACKATHON", "Creating IntentLearner Object " );
+        intentdb = new IntentLearner(this);
 
         Intent intent = getIntent();
         Parcelable targetParcelable = intent.getParcelableExtra(Intent.EXTRA_INTENT);
@@ -69,28 +69,18 @@ public class ChooserActivity extends ResolverActivity {
             }
         }
         super.onCreate(savedInstanceState, target, title, initialIntents, null, false);
-        Log.i("HACKATHON", "Creating IntentLearner Object " );
-        intentdb = new IntentLearner(this.getApplicationContext());
+
     }
 
     protected void onIntentSelected(ResolveInfo ri, Intent intent, boolean alwaysCheck) {
-        String mimeType = getIntent().getType();
+        String mimeType = mSourceIntent.getType();
         String chosenPackage = intent.getComponent().getPackageName();
         Log.i("HACKATHON", "updating stats for " + mimeType + " choosing " + chosenPackage);
         if(chosenPackage != null) {
-            //updateState(mimeType, chosePackage);
-            if (chosenPackage.equals(GPLUS_PKG)) {
-                String key = GPLUS_PROP;
-                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-                int curValue = prefs.getInt(key, 0);
-                Log.i("HACKATHON", "putting gplus value " + (curValue+1));
-                prefs.edit().putInt(key, curValue+1).commit();
-            }
-            else
-            {
-                Log.i("HACKATHON", "Updating App usage for "+ mimeType + " and " + chosenPackage + " in IntentDB " );
-                intentdb.UpdateAppUsage (chosenPackage,mimeType,null);
-            }
+
+            Log.i("HACKATHON", "Updating App usage for "+ mimeType + " and " + chosenPackage + " in IntentDB " );
+            intentdb.UpdateAppUsage(chosenPackage, mimeType, null);
+
         }
         
         // NOTE: make sure this call to super is here, or the ChooserActivity will stop working! 
@@ -99,18 +89,13 @@ public class ChooserActivity extends ResolverActivity {
 
     protected List<String> getPopularPackages(String mimeType) {
         List<String> l;
-        String key = GPLUS_PROP;
-        int gplusVal = PreferenceManager.getDefaultSharedPreferences(this).getInt(GPLUS_PROP, 0);
-        Log.i("HACKATHON", "got gplus value " + gplusVal);
-        if (gplusVal > 0) {
-            l = new ArrayList<String>();
-            l.add(GPLUS_PKG);
-        }
-        else
-        {
-            Log.i("HACKATHON", "Get List of Apps for "+ mimeType +" from IntentDB " );
-            l = intentdb.GetListofApps(mimeType);
+
+        Log.i("HACKATHON", "Get List of Apps for "+ mimeType +" from IntentDB " );
+        l = intentdb.GetListofApps(mimeType);
+        if (l.size() > 0) {
             Log.i("HACKATHON", "Top App from intentdb is " + l.get(0));
+        } else {
+            Log.i("HACKATHON", "No top apps");
         }
 
         if (l.isEmpty())
@@ -125,8 +110,8 @@ public class ChooserActivity extends ResolverActivity {
 
     @Override
     protected void onResume() {
-        super.onResume();
         hideSystemUI();
+        super.onResume();
     }
 
     private void hideSystemUI() {
