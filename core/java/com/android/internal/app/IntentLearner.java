@@ -24,6 +24,7 @@ import java.lang.Integer;
 import java.lang.Override;
 import java.lang.String;
 import java.util.Comparator;
+import java.util.Collections;
 import java.util.PriorityQueue;
 import android.content.*;
 
@@ -142,9 +143,8 @@ public class IntentLearner extends SQLiteOpenHelper
                     sortOrder
             );
 
-            //listofApps = new PriorityQueue<LearnedData>();
-            List<String> list = new ArrayList<String>(50);
-            c.moveToFirst();
+            if(!c.moveToFirst()) { return Collections.emptyList(); }
+            List<String> list = new ArrayList<String>(c.getCount());
             do {
                 String appname = c.getString(c.getColumnIndex(Intent.COLUMN_NAME_APPNAME));
                 int count = c.getInt(c.getColumnIndex(Intent.COLUMN_NAME_USE_COUNT));
@@ -155,22 +155,6 @@ public class IntentLearner extends SQLiteOpenHelper
 
             return list;
         }
-
-        /*
-        public class CountCompare extends Comparator <int>
-        {
-            @Override
-            public int Compare (int a, int b)
-            {
-                if (a < b)
-                    return -1;
-                else if (a > b)
-                    return 1;
-                return 0;
-            }
-
-        }
-        */
 
         public void UpdateAppUsage(String appname, String mimetype,String sourceapp )
         {
@@ -217,7 +201,7 @@ public class IntentLearner extends SQLiteOpenHelper
                             selection,
                             null);
 
-                    Log.i("HACKATHON","Number of Rows Updated "+numofrows);
+                    Log.i("HACKATHON","Updated " + mimetype + " count to " + count);
                 }
                 else
                 {
@@ -231,7 +215,7 @@ public class IntentLearner extends SQLiteOpenHelper
                                 null,
                                 cv);
 
-                    Log.i("HACKATHON","Row Created "+rowid);
+                    Log.i("HACKATHON","Row Created for "+mimetype);
                 }
             }
             catch (SQLiteException e)
